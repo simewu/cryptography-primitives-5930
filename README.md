@@ -1,4 +1,4 @@
-## Course project for CS 5930.
+## Course assignment for CS 5930.
 
 ### NAME OF PROJECT: Confidentiality and Integrity Crypto App
 ---
