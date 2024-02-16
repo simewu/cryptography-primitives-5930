@@ -139,11 +139,7 @@ Signature was successfully verified and is valid.
 
 ### PROBLEM DESCRIPTION AND REMEDIATION:
 
-The Confidentiality and Integrity Crypto App was initially developed to enhance data confidentiality, a fundamental aspect of the CIA triad. This objective was achieved through the implementation of file encryption using the AES algorithm in CBC mode. Recognizing the indispensable role of data integrity alongside confidentiality, the application was further augmented with digital signature capabilities. This addition enables users to sign files using RSA with PSS padding, ensuring the authenticity and unaltered state of data.
 
-The application supports two critical security principles: confidentiality, through encryption, and integrity, via digital signatures. Encryption safeguards data from unauthorized access, while digital signatures provide a mechanism to verifying data authenticity and integrity. This dual functionality addresses the core requirements of secure data handling by preventing unauthorized disclosure and ensuring data remains unchanged from its original state.
-
-Structured with a user-centric interface, the app facilitates key cryptographic operations: RSA keypair generation, file encryption and decryption, and digital signature generation and verification. It is complemented by utility scripts for dependency management and execution, alongside a .gitignore file to exclude sensitive cryptographic materials from version control, reinforcing security practices.
+While initially tasked with implementing encryption and decryption to ensure confidentiality, the application was extended to include integrity through digital signature generation and verification, which makes use of the `cryptography.hazmat.primitives` Python library. Doing so both restricts unauthorized access and authenticates data integrity, providing a text interface for RSA keypair generation, file encryption and decryption, and digital signature generation/verification.
 
 ---
-
