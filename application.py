@@ -8,22 +8,23 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import padding as sym_padding
 
-# File output names as global variables
-directory = 'outputs'
-public_key_file_name = os.path.join(directory, 'public_key.pem')
-private_key_file_name = os.path.join(directory, 'private_key.pem')
-encryption_file_name = os.path.join(directory, 'encrypted_file.enc')
-decryption_file_name = os.path.join(directory, 'decrypted_file.txt')
-signature_file_name = os.path.join(directory, 'signature.txt')
-if not os.path.exists(directory):
-	print(f'Creating directory {directory} for output files.')
-	os.makedirs(directory)
+# Configuration class to store file names and directory paths for the application
+class Configuration:
+	directory = 'outputs'
+	public_key_file_name = os.path.join(directory, 'public_key.pem')
+	private_key_file_name = os.path.join(directory, 'private_key.pem')
+	encryption_file_name = os.path.join(directory, 'encrypted_file.enc')
+	decryption_file_name = os.path.join(directory, 'decrypted_file.txt')
+	signature_file_name = os.path.join(directory, 'signature.txt')
 
-# Main application
+# Main application function to display the menu and handle user input
 def main():
+	if not os.path.exists(Configuration.directory):
+		print(
+			f'Creating directory {Configuration.directory} for output files.')
+		os.makedirs(Configuration.directory, exist_ok=True)
+
 	while True:
-		# Clear the screen
-		
 		print()
 		print('Please select an operation: ')
 		print('  1 - Generate Keypair')
@@ -34,7 +35,7 @@ def main():
 		print('  6 - Exit Application')
 		print()
 		choice = input('Your selection: ')
-		os.system('cls' if os.name == 'nt' else 'clear')
+		clear_screen()
 
 		if choice == '1': print('You selected "Generate Keypair".')
 		elif choice == '2': print('You selected "Encrypt File".')
@@ -51,17 +52,18 @@ def main():
 			print('  -  private_key.pem')
 			print('  -  public_key.pem')
 			print('RSA keypair generated successfully.')
-			
+
 		elif choice == '3':
-			decrypt_file(encryption_file_name)
-			print(f'File decrypted successfully as {decryption_file_name}')
+			decrypt_file(Configuration.encryption_file_name)
+			print(
+				f'File decrypted successfully as {Configuration.decryption_file_name}')
 			print()
 			print('Its contents are: ')
-			with open(decryption_file_name, 'rb') as f:
+			with open(Configuration.decryption_file_name, 'rb') as f:
 				print(f.read())
 
 		elif choice in ['2', '4', '5']:
-			if not os.path.exists(public_key_file_name) or not os.path.exists(private_key_file_name):
+			if not os.path.exists(Configuration.public_key_file_name) or not os.path.exists(Configuration.private_key_file_name):
 				print('RSA keypair not found. Please generate a keypair first.')
 				continue
 
@@ -75,7 +77,7 @@ def main():
 				print(f'File encrypted successfully as {file_name}')
 				print()
 				print('Its contents are: ')
-				with open(encryption_file_name, 'rb') as f:
+				with open(Configuration.encryption_file_name, 'rb') as f:
 					print(f.read())
 
 			elif choice == '4':
@@ -83,11 +85,11 @@ def main():
 				print(f'Signature generated successfully as {file_name}')
 				print()
 				print('Its contents are: ')
-				with open(signature_file_name, 'rb') as f:
+				with open(Configuration.signature_file_name, 'rb') as f:
 					print(f.read())
 
 			elif choice == '5':
-				verify_signature(file_name, signature_file_name)
+				verify_signature(file_name, Configuration.signature_file_name)
 
 		else:
 			print('Exiting application.')
@@ -95,55 +97,69 @@ def main():
 
 		print()
 
-# Generate an RSA keypair and save it to files
+# Clear the text console screen
+def clear_screen():
+	os.system('cls' if os.name == 'nt' else 'clear')
+
+# Generate an RSA keypair and save it to files in the output directory
 def generate_rsa_keypair():
-	private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048, backend=default_backend())
-	public_key = private_key.public_key()
+	try:
+		private_key = rsa.generate_private_key(
+			public_exponent=65537, key_size=2048)
+		public_key = private_key.public_key()
 
-	# Save the private key
-	with open(private_key_file_name, 'wb') as f:
-		f.write(private_key.private_bytes(
-			encoding=serialization.Encoding.PEM,
-			format=serialization.PrivateFormat.PKCS8,
-			encryption_algorithm=serialization.NoEncryption()
-		))
+		# Ensuring the output directory exists
+		os.makedirs(Configuration.directory, exist_ok=True)
 
-	# Save the public key
-	with open(public_key_file_name, 'wb') as f:
-		f.write(public_key.public_bytes(
-			encoding=serialization.Encoding.PEM,
-			format=serialization.PublicFormat.SubjectPublicKeyInfo
-		))
+		# Save the private key
+		with open(Configuration.private_key_file_name, 'wb') as f:
+			f.write(private_key.private_bytes(
+					encoding=serialization.Encoding.PEM,
+					format=serialization.PrivateFormat.PKCS8,
+					encryption_algorithm=serialization.NoEncryption()
+					))
 
-# Function to pad plaintext for AES encryption
-def pad(data):
-	padder = sym_padding.PKCS7(128).padder()  # 128 bit = 16 byte block size
-	padded_data = padder.update(data) + padder.finalize()
-	return padded_data
+		# Save the public key
+		with open(Configuration.public_key_file_name, 'wb') as f:
+			f.write(public_key.public_bytes(
+					encoding=serialization.Encoding.PEM,
+					format=serialization.PublicFormat.SubjectPublicKeyInfo
+					))
+		print('RSA keypair generated and saved successfully.')
+	except Exception as e:
+		print(f'Failed to generate RSA keypair: {e}')
 
-# Function to unpad plaintext after AES decryption
-def unpad(padded_data):
-	unpadder = sym_padding.PKCS7(128).unpadder()
-	data = unpadder.update(padded_data) + unpadder.finalize()
-	return data
+# Class to handle AES padding for encryption and decryption
+class AESPadding:
+	@staticmethod
+	def pad(data):
+		padder = sym_padding.PKCS7(128).padder()
+		return padder.update(data) + padder.finalize()
 
-# Encrypt a file using an RSA public key
+	@staticmethod
+	def unpad(padded_data):
+		unpadder = sym_padding.PKCS7(128).unpadder()
+		return unpadder.update(padded_data) + unpadder.finalize()
+
+# Encrypt a file using an RSA public key and AES-256
 def encrypt_file(file_name):
 	try:
-		with open(public_key_file_name, 'rb') as key_file:
+		with open(Configuration.public_key_file_name, 'rb') as key_file:
 			public_key_pem = key_file.read()
-		public_key = serialization.load_pem_public_key(public_key_pem, backend=default_backend())
+		public_key = serialization.load_pem_public_key(
+			public_key_pem, backend=default_backend())
 
 		aes_key = os.urandom(32)  # AES-256
 		iv = os.urandom(16)
 
-		cipher = Cipher(algorithms.AES(aes_key), modes.CBC(iv), backend=default_backend())
+		cipher = Cipher(algorithms.AES(aes_key), modes.CBC(iv),
+						backend=default_backend())
 		encryptor = cipher.encryptor()
 
 		with open(file_name, 'rb') as f:
 			plaintext = f.read()
-		
-		padded_plaintext = pad(plaintext)  # Pad the plaintext before encryption
+
+		padded_plaintext = AESPadding.pad(plaintext)
 
 		ciphertext = encryptor.update(padded_plaintext) + encryptor.finalize()
 
@@ -151,69 +167,78 @@ def encrypt_file(file_name):
 			aes_key,
 			padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()), algorithm=hashes.SHA256(), label=None))
 
-		with open(encryption_file_name, 'wb') as f:
+		with open(Configuration.encryption_file_name, 'wb') as f:
 			f.write(encrypted_aes_key + iv + ciphertext)
-		print(f'File encrypted successfully as {encryption_file_name}')
+		print(
+			f'File encrypted successfully as {Configuration.encryption_file_name}')
 	except Exception as e:
-		print(f'Error encrypting file: {e}')
+		print(f'Encryption failed: {e}')
 
-# Decrypt a file using an RSA private key
+# Decrypt a file using an RSA private key and AES-256
 def decrypt_file(file_name):
 	try:
-		with open(private_key_file_name, 'rb') as key_file:
+		with open(Configuration.private_key_file_name, 'rb') as key_file:
 			private_key_pem = key_file.read()
-		private_key = serialization.load_pem_private_key(private_key_pem, password=None, backend=default_backend())
+		private_key = serialization.load_pem_private_key(
+			private_key_pem, password=None, backend=default_backend())
 
 		with open(file_name, 'rb') as f:
 			file_content = f.read()
 
 		encrypted_aes_key = file_content[:private_key.key_size // 8]
-		iv = file_content[private_key.key_size // 8:private_key.key_size // 8 + 16]
+		iv = file_content[private_key.key_size //
+						  8:private_key.key_size // 8 + 16]
 		ciphertext = file_content[private_key.key_size // 8 + 16:]
 
 		aes_key = private_key.decrypt(
 			encrypted_aes_key,
 			padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()), algorithm=hashes.SHA256(), label=None))
 
-		cipher = Cipher(algorithms.AES(aes_key), modes.CBC(iv), backend=default_backend())
+		cipher = Cipher(algorithms.AES(aes_key), modes.CBC(iv),
+						backend=default_backend())
 		decryptor = cipher.decryptor()
 		padded_plaintext = decryptor.update(ciphertext) + decryptor.finalize()
 
-		plaintext = unpad(padded_plaintext)  # Unpad the decrypted plaintext
+		plaintext = AESPadding.unpad(padded_plaintext)
 
-		with open(decryption_file_name, 'wb') as f:
+		with open(Configuration.decryption_file_name, 'wb') as f:
 			f.write(plaintext)
-		print(f'File decrypted successfully as {decryption_file_name}')
+		print(
+			f'File decrypted successfully as {Configuration.decryption_file_name}')
 	except Exception as e:
-		print(f'Error decrypting file: {e}')
+		print(f'Decryption failed: {e}')
 
-# Sign a file using an RSA private key
+# Sign a file using an RSA private key and save the signature to a file
 def sign_file(file_name):
 	try:
-		with open(private_key_file_name, 'rb') as key_file:
+		with open(Configuration.private_key_file_name, 'rb') as key_file:
 			private_key_pem = key_file.read()
-		private_key = serialization.load_pem_private_key(private_key_pem, password=None, backend=default_backend())
+		private_key = serialization.load_pem_private_key(
+			private_key_pem, password=None, backend=default_backend())
 
 		with open(file_name, 'rb') as f:
 			data = f.read()
 
 		signature = private_key.sign(
 			data,
-			padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH),
+			padding.PSS(mgf=padding.MGF1(hashes.SHA256()),
+						salt_length=padding.PSS.MAX_LENGTH),
 			hashes.SHA256())
 
-		with open(signature_file_name, 'wb') as f:
+		with open(Configuration.signature_file_name, 'wb') as f:
 			f.write(signature)
-		print(f'Signature generated successfully as {signature_file_name}')
+		print(
+			f'Signature generated successfully as {Configuration.signature_file_name}')
 	except Exception as e:
 		print(f'Error signing file: {e}')
 
-# Verify the signature of a file using an RSA public key
+# Verify the signature of a file using an RSA public key and a signature file
 def verify_signature(file_name, signature_file):
 	try:
-		with open(public_key_file_name, 'rb') as key_file:
+		with open(Configuration.public_key_file_name, 'rb') as key_file:
 			public_key_pem = key_file.read()
-		public_key = serialization.load_pem_public_key(public_key_pem, backend=default_backend())
+		public_key = serialization.load_pem_public_key(
+			public_key_pem, backend=default_backend())
 
 		with open(file_name, 'rb') as f:
 			data = f.read()
@@ -223,7 +248,8 @@ def verify_signature(file_name, signature_file):
 		public_key.verify(
 			signature,
 			data,
-			padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.MAX_LENGTH),
+			padding.PSS(mgf=padding.MGF1(hashes.SHA256()),
+						salt_length=padding.PSS.MAX_LENGTH),
 			hashes.SHA256())
 		print('Signature was successfully verified and is valid.')
 	except InvalidSignature:
@@ -232,7 +258,7 @@ def verify_signature(file_name, signature_file):
 		print(f'Error verifying signature: {e}')
 
 # Given a regular expression, list the files that match it, and ask for user input
-def selectFile(regex, subdirs = False, multiSelect = False):
+def selectFile(regex, subdirs=False, multiSelect=False):
 	try:
 		files = []
 		compiledRegex = re.compile(regex)
@@ -286,7 +312,7 @@ def selectFile(regex, subdirs = False, multiSelect = False):
 		sys.exit()
 
 # Lists files in a directory matching a given regex, optionally including subdirectories
-def listFiles(regex = '.*', directory = '', subdirs = True):
+def listFiles(regex='.*', directory='', subdirs=True):
 	files = []
 	if subdirs:
 		for root, _, fileNames in os.walk(directory):
@@ -296,7 +322,7 @@ def listFiles(regex = '.*', directory = '', subdirs = True):
 					files.append(filePath)
 	else:
 		path = os.path.abspath(directory)
-		files = [os.path.join(path, file) for file in os.listdir(path) 
+		files = [os.path.join(path, file) for file in os.listdir(path)
 				 if os.path.isfile(os.path.join(path, file)) and re.match(regex, file)]
 	return files
 
