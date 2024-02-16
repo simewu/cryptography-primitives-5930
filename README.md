@@ -1,22 +1,16 @@
-# openssl_crypto_app
-In the program description, you should write a 1-2 sentence description of why the program was
-developed and what principle of security the program supports
+## Course project for CS 5930.
 
+### NAME OF PROJECT: Confidentiality and Integrity Crypto App
+---
 
-NAME OF PROJECT: CS 5930: Confidentiality and Integrity Crypto App
-================
+### NAME OF PROGRAMMER: Simeon Wuthier
+---
 
-NAME OF PROGRAMMER: Simeon Wuthier
-===================
-
-
-STATEMENT:
-==========
+### STATEMENT:
 I have neither given nor received unauthorized assistance on this work.
-
-
-SPECIAL INSTRUCTIONS:
-=====================
+---
+### SPECIAL INSTRUCTIONS:
+---
 
 The core of this application in its entirety is located in the python file: `application.py`. However additional files exist for additional convenience of the user. This application is composed of the following files:
 
@@ -53,7 +47,7 @@ Your selection:
 ```
 
  * When selection: `1`:
- * * ```
+```
 You selected "Generate Keypair".
 
 Generated:
@@ -65,8 +59,8 @@ Two RSA 2048 files will be created:
 * outputs/private_key.pem
 * outputs/public_key.pem
 
-* When selection: `2`:
-* * ```
+When selection: `2`:
+```
 List of files:
   File 1  -  .gitignore
   File 2  -  application.bat
@@ -83,11 +77,11 @@ File encrypted successfully as LICENSE
 Its contents are:
 b'{n\xad\x98\x1a\xd3\x7fa$]\\\x9c\xad\xf7h\x02T\xec...
 ```
-Upon selecting a file, the app will encrypt a file using AES with CBC mode:
-* outputs/encrypted_file.enc
+* Upon selecting a file, the app will encrypt a file using AES with CBC mode:
+* * outputs/encrypted_file.enc
 
-* When selection: `3`:
-* * ```
+When selection: `3`:
+```
 You selected "Decrypt File".
 
 File decrypted successfully as outputs\decrypted_file.txt
@@ -96,11 +90,11 @@ File decrypted successfully as outputs\decrypted_file.txt
 Its contents are:
 b'MIT License\r\n\r\nCopyright (c) 2024 Simeon Wuthier...
 ```
-Upon selecting a ciphertext, the app will decrypt it to:
+* Upon selecting a ciphertext, the app will decrypt it to:
 * * outputs/decrypted_file.txt
 
-* When selection: `4`:
-* * ```
+When selection: `4`:
+```
 You selected "Generate File Signature".
 
 List of files:
@@ -119,11 +113,11 @@ Signature generated successfully as application.py
 Its contents are:
 b'r`v\xcdz\x8d\xf8\x06\xc3\x80\xadi\xfc
 ```
-Upon selecting a file, the app will generate a digital signature using the RSA algorithm with PSS (Probabilistic Signature Scheme) padding, generating:
+* Upon selecting a file, the app will generate a digital signature using the RSA algorithm with PSS (Probabilistic Signature Scheme) padding, generating:
 * * outputs/signature.txt
 
-* When selection: `5`:
-* * ```
+When selection: `5`:
+```
 You selected "Verify File Signature".
 
 
@@ -139,8 +133,17 @@ Please select a file: 3
 You selected "application.py".
 Signature was successfully verified and is valid.
 ```
-The signature verification will output success or failure, for if the digital signature is valid or invalid.
+* The signature verification will output success or failure, for if the digital signature is valid or invalid.
 
-PROBLEM DESCRIPTION AND REMEDIATION:
-====================================
+---
+
+### PROBLEM DESCRIPTION AND REMEDIATION:
+
+The Confidentiality and Integrity Crypto App was initially developed to enhance data confidentiality, a fundamental aspect of the CIA triad. This objective was achieved through the implementation of file encryption using the AES algorithm in CBC mode. Recognizing the indispensable role of data integrity alongside confidentiality, the application was further augmented with digital signature capabilities. This addition enables users to sign files using RSA with PSS padding, ensuring the authenticity and unaltered state of data.
+
+The application supports two critical security principles: confidentiality, through encryption, and integrity, via digital signatures. Encryption safeguards data from unauthorized access, while digital signatures provide a mechanism to verifying data authenticity and integrity. This dual functionality addresses the core requirements of secure data handling by preventing unauthorized disclosure and ensuring data remains unchanged from its original state.
+
+Structured with a user-centric interface, the app facilitates key cryptographic operations: RSA keypair generation, file encryption and decryption, and digital signature generation and verification. It is complemented by utility scripts for dependency management and execution, alongside a .gitignore file to exclude sensitive cryptographic materials from version control, reinforcing security practices.
+
+---
 
